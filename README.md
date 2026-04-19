@@ -79,10 +79,14 @@ To_Do_List_App
 ## ⚙ Installation and Setup
 
 Step 1 — Clone the repository -- git clone https://github.com/NIDHI-2007/To_Do_List_App/
+
 Step 2 — Navigate to the project -- cd To_Do_List_App
+
 Step 3 — Install dependencies --  pip install flask
                                   pip install flask-sqlalchemy
+                                  
 Step 4 — Run the application -- python app.py
+
 Step 5 — Open in browser -- http://127.0.0.1:5000
 
 ## 📊 Dashboard Example
