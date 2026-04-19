@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task</title>
+    <link href="/static/index.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <h2>Edit Task</h2>
+
+        <form method="POST">
+            <input type="text" name="title" value="{{task.title}}" required>
+            <button type="submit">
+                Update Task
+            </button>
+        </form>
+
+        <br>
+
+        <form action="/" method="GET">
+            <button class="back-btn">
+                Back
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List App</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+
+<body>
+    <div class="app">
+        <h1>To Do App</h1>
+        <div class="dashboard-wrapper">
+            <div class="dashboard">
+
+                <div class="stat-card total">
+                    <h3>Total</h3>
+                    <p>{{ total_count }}</p>
+                </div>
+
+                <div class="stat-card completed">
+                    <h3>Completed</h3>
+                    <p>{{ completed_count }}</p>
+                </div>
+
+                <div class="stat-card pending">
+                    <h3>Pending</h3>
+                    <p>{{ uncompleted_count }}</p>
+                </div>
+
+                <div class="stat-card overdue">
+                    <h3>Overdue</h3>
+                    <p>{{ overdue_count }}</p>
+                </div>
+
+                <div class="stat-card high">
+                    <h3>High</h3>
+                    <p>{{ high_count }}</p>
+                </div>
+
+                <div class="stat-card medium">
+                    <h3>Medium</h3>
+                    <p>{{ medium_count }}</p>
+                </div>
+
+                <div class="stat-card low">
+                    <h3>Low</h3>
+                    <p>{{ low_count }}</p>
+                </div>
+
+            </div>
+            <div class="chart-container">
+
+                <canvas id="taskChart"></canvas>
+
+            </div>
+        </div>
+
+        <div class="input-section">
+            <form method="POST" class="add-form">
+
+                <input type="text" name="title" placeholder="Enter a task" required>
+
+                <input type="date" name="due_date">
+
+                <select name="priority">
+                    <option value="High">High</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+
+                <button type="submit" class="add-btn">
+                    Add
+                </button>
+
+            </form>
+
+            <div class="search-sort-row">
+
+                <form method="GET" class="search-form">
+
+                    <input type="text" name="search" placeholder="Search tasks..."
+                        value="{{ request.args.get('search', '') }}">
+
+                    <input type="hidden" name="sort" value="{{ request.args.get('sort', 'due') }}">
+
+                    <button type="submit">
+                        Search
+                    </button>
+
+                </form>
+
+                <form method="GET" class="sort-form">
+
+                    <input type="hidden" name="search" value="{{ request.args.get('search', '') }}">
+
+                    <select name="sort" onchange="this.form.submit()">
+
+                        <option value="due" {% if request.args.get('sort')=='due' %} selected {% endif %}>
+                            Sort by Due Date
+                        </option>
+
+                        <option value="priority" {% if request.args.get('sort')=='priority' %} selected {% endif %}>
+                            Sort by Priority
+                        </option>
+
+                        <option value="new" {% if request.args.get('sort')=='new' %} selected {% endif %}>
+                            Newest First
+                        </option>
+
+                        <option value="old" {% if request.args.get('sort')=='old' %} selected {% endif %}>
+                            Oldest First
+                        </option>
+
+                    </select>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <h2>Task List</h2>
+
+        <ul>
+
+            {% for task in tasks %}
+
+            <li class="
+                {% if task.completed %}
+                    completed
+                {% elif task.due_date and task.due_date < date.today() %}
+                    overdue
+                {% endif %}
+                task-item
+            ">
+
+                <div class="task-left">
+
+                    <div class="task-title">
+                        {{ task.title }}
+                    </div>
+
+                    <div class="task-meta">
+
+                        {% if task.priority %}
+                        <span class="priority {{ task.priority }}">
+                            {{ task.priority }}
+                        </span>
+                        {% endif %}
+
+                        {% if task.due_date %}
+                        <span class="due-date">
+                            Due: {{ task.due_date.strftime("%d %b %Y") }}
+                        </span>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div class="task-actions">
+
+                    <form action="{{ url_for('complete', id=task.id) }}" method="POST">
+                        <button type="submit" class="toggle-btn">
+                            Toggle
+                        </button>
+                    </form>
+
+                    <form action="{{ url_for('edit', id=task.id) }}" method="GET">
+                        <button type="submit" class="edit-btn">
+                            Edit
+                        </button>
+                    </form>
+
+                    <form action="{{ url_for('delete', id=task.id) }}" method="GET">
+                        <button type="submit" class="delete-btn">
+                            Delete
+                        </button>
+                    </form>
+
+                </div>
+
+            </li>
+
+            {% endfor %}
+
+        </ul>
+        <div class="task-count">
+            Completed:<span>{{ completed_count }}</span>
+            |
+            Uncompleted:<span>{{ uncompleted_count }}</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const ctx = document
+                .getElementById("taskChart")
+                .getContext("2d");
+
+            new Chart(ctx, {
+
+                type: "pie",
+
+                data: {
+
+                    labels: [
+                        "Completed",
+                        "Pending",
+                        "Overdue"
+                    ],
+
+                    datasets: [{
+
+                        data: [
+
+                            Number("{{ completed_count }}"),
+                            Number("{{ uncompleted_count }}"),
+                            Number("{{ overdue_count }}")
+
+                        ],
+
+                        backgroundColor: [
+
+                            "#28a745",
+                            "#ffc107",
+                            "#dc3545"
+
+                        ]
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    plugins: {
+
+                        legend: {
+                            position: "bottom"
+                        }
+
+                    }
+
+                }
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>
